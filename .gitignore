@@ -12,3 +12,6 @@ TestResults/
 
 # macOS
 .DS_Store
+
+# Builds publicados (tools/publish.sh)
+publish/

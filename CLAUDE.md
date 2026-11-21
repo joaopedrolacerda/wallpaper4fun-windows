@@ -19,6 +19,18 @@ dotnet run --project src/Wallpaper4Fun.App
 - `TreatWarningsAsErrors` está ligado em todos os projetos: warning quebra o build.
 - Dados do usuário ficam em `%APPDATA%\wallpaper4fun` (`settings.json` e a pasta `Wallpapers`).
 
+## Gerar o .exe
+
+```bash
+./tools/publish.sh
+```
+
+- Gera `publish/wallpaper4fun-win-x64.zip` com `wallpaper4fun/wallpaper4fun.exe` e a pasta `Videos`. O `.exe` leva o .NET dentro (self-contained, arquivo único comprimido, ~90 MB), então o PC não precisa ter o .NET instalado.
+- `./tools/publish.sh win-arm64` gera a versão para PCs com processador ARM.
+- Funciona no Mac também (o ícone do `.exe` entra mesmo assim). `publish/` está no `.gitignore`.
+- O `.exe` não é assinado: o Windows SmartScreen avisa na primeira vez ("Mais informações" → "Executar assim mesmo").
+- A pasta `Videos` precisa ficar ao lado do `.exe`.
+
 ## Estrutura
 
 ```
