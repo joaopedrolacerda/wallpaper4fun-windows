@@ -14,11 +14,13 @@ public partial class App : Application
     private DesktopWindowPresenter? _presenter;
     private WallpaperManager? _manager;
     private SystemEventObserver? _systemEvents;
+    private ForegroundWatcher? _foreground;
     private TrayIcon? _tray;
     private PanelWindow? _panel;
 
     protected override void OnStartup(StartupEventArgs e)
     {
+        StartupTrace.Step("OnStartup");
         base.OnStartup(e);
         ErrorReporter.Install(this);
         try
@@ -38,20 +40,26 @@ public partial class App : Application
     /// </summary>
     private void StartApp()
     {
+        StartupTrace.Step("criando o manager");
         _presenter = new DesktopWindowPresenter();
         var manager = CreateManager(_presenter);
         _manager = manager;
         _presenter.MakeContent = () => new WallpaperHost(manager, AppSources.Standard);
+        StartupTrace.Step("abrindo o painel");
         ShowPanel();
+        StartupTrace.Step("painel aberto");
         ErrorReporter.Try("criar o ícone da bandeja", () => _tray = new TrayIcon(manager, ShowPanel, Quit));
         ErrorReporter.Try("acompanhar a suspensão do sistema", () => _systemEvents = new SystemEventObserver(manager, Dispatcher));
+        ErrorReporter.Try("acompanhar apps em tela cheia", () => _foreground = new ForegroundWatcher(manager));
         ErrorReporter.Try("mostrar o wallpaper atrás dos ícones", manager.Start);
+        StartupTrace.Step("inicialização concluída");
     }
 
     protected override void OnExit(ExitEventArgs e)
     {
         _tray?.Dispose();
         _systemEvents?.Dispose();
+        _foreground?.Dispose();
         _presenter?.Dispose();
         base.OnExit(e);
     }
@@ -93,7 +101,9 @@ internal static class ErrorReporter
     {
         try
         {
+            StartupTrace.Step($"{step}…");
             action();
+            StartupTrace.Step($"{step}: ok");
         }
         catch (Exception error)
         {
@@ -118,7 +128,9 @@ internal static class ErrorReporter
 
     private static void Record(Exception? error)
     {
-        if (error is not null) Log.Write(error, DateTimeOffset.Now);
+        if (error is null) return;
+        Log.Write(error, DateTimeOffset.Now);
+        StartupTrace.Step($"ERRO: {error}");
     }
 
     private static void Show(string summary, Exception error, MessageBoxImage icon) =>
@@ -135,6 +147,7 @@ internal static class AppPaths
     public static string SettingsFile => Path.Combine(Root, "settings.json");
     public static string VideosFolder => Path.Combine(Root, "Wallpapers");
     public static string CrashLogFile => Path.Combine(Root, "crash.log");
+    public static string StartupLogFile => Path.Combine(Root, "startup.log");
 
     /// <summary>Vídeos padrão, instalados na pasta Videos ao lado do .exe.</summary>
     public static FolderVideoLocator BundledVideos { get; } = new(Path.Combine(AppContext.BaseDirectory, "Videos"));

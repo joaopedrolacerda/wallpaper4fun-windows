@@ -1,15 +1,36 @@
 #!/bin/zsh
-# Gera o wallpaper4fun para Windows: um .exe que não precisa do .NET instalado,
-# mais a pasta Videos, empacotados em publish/wallpaper4fun-<rid>.zip.
-#   ./tools/publish.sh            -> win-x64 (PCs comuns; roda também em ARM por emulação)
-#   ./tools/publish.sh win-arm64  -> PCs com processador ARM
+# Gera o wallpaper4fun para Windows: uma pasta com o wallpaper4fun.exe, as DLLs do .NET
+# (não precisa ter o .NET instalado) e a pasta Videos, empacotada em publish/wallpaper4fun-<rid>.zip.
+#   ./tools/publish.sh                  -> win-x64 (PCs comuns; roda também em ARM por emulação)
+#   ./tools/publish.sh win-arm64        -> PCs com processador ARM
+#   ./tools/publish.sh --diagnostico    -> abre com uma janela de console mostrando cada passo e
+#                                          os erros.
+#                                          Use quando o app "não abre" num PC.
 set -e
 cd "$(dirname "$0")/.."
-RID=${1:-win-x64}
-OUT=publish/$RID
-rm -rf $OUT publish/wallpaper4fun-$RID.zip
-dotnet publish src/Wallpaper4Fun.App -c Release -r $RID --self-contained true \
-  -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=None -o $OUT
+
+RID=win-x64
+DIAGNOSTIC=false
+for arg in "$@"; do
+  case $arg in
+    --diagnostico) DIAGNOSTIC=true ;;
+    *) RID=$arg ;;
+  esac
+done
+
+if $DIAGNOSTIC; then
+  NAME=wallpaper4fun-diagnostico-$RID
+  MODE=(-p:Diagnostic=true -p:PublishSingleFile=false)
+else
+  NAME=wallpaper4fun-$RID
+  # Arquivos soltos, não .exe único: a v1.0.1 (arquivo único comprimido) não abria no Windows 10
+  # testado, e a versão de diagnóstico (arquivos soltos) abriu.
+  MODE=(-p:PublishSingleFile=false)
+fi
+
+OUT=publish/$NAME
+rm -rf $OUT publish/$NAME.zip
+dotnet publish src/Wallpaper4Fun.App -c Release -r $RID --self-contained true -p:DebugType=None $MODE -o $OUT
 rm -f $OUT/*.pdb
-(cd publish && mv $RID wallpaper4fun && zip -qr wallpaper4fun-$RID.zip wallpaper4fun && mv wallpaper4fun $RID)
-echo "pronto: publish/wallpaper4fun-$RID.zip"
+(cd publish && mv $NAME wallpaper4fun && zip -qr $NAME.zip wallpaper4fun && mv wallpaper4fun $NAME)
+echo "pronto: publish/$NAME.zip"

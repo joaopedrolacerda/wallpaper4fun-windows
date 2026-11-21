@@ -70,4 +70,27 @@ public sealed class CrashLogTests : IDisposable
 
         Assert.Null(error);
     }
+
+    [Fact(DisplayName = "anota passos com data e hora, um por linha")]
+    public void NotesSteps()
+    {
+        var log = new CrashLog(_folder.File("startup.log"));
+
+        log.Note("abrindo painel", When);
+        log.Note("painel aberto", When);
+
+        var lines = File.ReadAllLines(log.FilePath);
+        Assert.Equal(2, lines.Length);
+        Assert.Contains("abrindo painel", lines[0]);
+        Assert.Contains("10:30:00", lines[0]);
+    }
+
+    [Fact(DisplayName = "se não der para anotar, não lança erro")]
+    public void NoteNeverThrows()
+    {
+        var blocked = _folder.MakeFile("ocupado");
+        var log = new CrashLog(Path.Combine(blocked, "startup.log"));
+
+        Assert.Null(Record.Exception(() => log.Note("x", When)));
+    }
 }

@@ -47,7 +47,10 @@ public sealed class WallpaperManager
     public string? LastError { get; private set; }
     public bool SystemSuspended { get; private set; }
 
-    public bool EffectivePaused => Settings.IsPaused || SystemSuspended;
+    /// <summary>Um app em tela cheia (jogo, vídeo) está na frente e esconde o wallpaper.</summary>
+    public bool FullscreenAppActive { get; private set; }
+
+    public bool EffectivePaused => Settings.IsPaused || SystemSuspended || FullscreenAppActive;
 
     /// <summary>Como a animação deve tocar agora. Use isto, não <c>Settings.IsPaused</c> direto.</summary>
     public Playback Playback => new(EffectivePaused, Settings.Speed);
@@ -64,6 +67,13 @@ public sealed class WallpaperManager
         Settings = change(old);
         _store.Save(Settings);
         if (old.IsEnabled != Settings.IsEnabled) ApplyEnabledState();
+        NotifyChanged();
+    }
+
+    public void FullscreenAppChanged(bool isActive)
+    {
+        if (isActive == FullscreenAppActive) return;
+        FullscreenAppActive = isActive;
         NotifyChanged();
     }
 

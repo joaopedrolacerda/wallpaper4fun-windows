@@ -122,6 +122,31 @@ public sealed class WallpaperManagerTests : IDisposable
         Assert.False(manager.EffectivePaused);
     }
 
+    [Fact(DisplayName = "pausa quando um app em tela cheia está na frente e volta quando ele sai")]
+    public void PausedWhileFullscreenAppIsActive()
+    {
+        var manager = MakeManager();
+
+        manager.FullscreenAppChanged(isActive: true);
+        Assert.True(manager.EffectivePaused);
+
+        manager.FullscreenAppChanged(isActive: false);
+        Assert.False(manager.EffectivePaused);
+    }
+
+    [Fact(DisplayName = "só avisa a interface quando o estado de tela cheia muda de verdade")]
+    public void FullscreenNotifiesOnlyOnChange()
+    {
+        var manager = MakeManager();
+        var raised = 0;
+        manager.Changed += (_, _) => raised++;
+
+        manager.FullscreenAppChanged(isActive: true);
+        manager.FullscreenAppChanged(isActive: true);
+
+        Assert.Equal(1, raised);
+    }
+
     [Fact(DisplayName = "o playback junta a pausa efetiva e a velocidade")]
     public void PlaybackCombinesPauseAndSpeed()
     {

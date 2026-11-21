@@ -23,10 +23,10 @@ public partial class PanelWindow : Window
         _registry = registry;
         _quit = quit;
         InitializeComponent();
-        PreviewFrame.Child = new WallpaperHost(manager, registry);
         AddSourceButtons();
         AddHideShortcut();
         _manager.Changed += (_, _) => Refresh();
+        IsVisibleChanged += (_, _) => OnVisibilityChanged();
         Refresh();
         // Só depois de carregar os valores: o slider dispara ValueChanged ao aplicar o mínimo,
         // o que sobrescreveria a velocidade salva.
@@ -48,6 +48,18 @@ public partial class PanelWindow : Window
     {
         if (ClosePolicy.Decide(_manager.Settings.HideToTrayWhenClosed) == PanelCloseAction.HideToTray) Hide();
         else _quit();
+    }
+
+    /// <summary>
+    /// Escondido na bandeja, o painel solta a prévia e as miniaturas: um vídeo ou shader
+    /// tocando onde ninguém vê só disputa CPU e placa de vídeo com o wallpaper de verdade.
+    /// </summary>
+    private void OnVisibilityChanged()
+    {
+        PreviewFrame.Child = IsVisible ? new WallpaperHost(_manager, _registry) : null;
+        _shownControlsId = null;
+        if (IsVisible) RefreshSourceControls();
+        else SourceControls.Content = null;
     }
 
     // Montagem

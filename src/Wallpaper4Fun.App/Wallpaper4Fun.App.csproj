@@ -3,13 +3,15 @@
   <!-- Camada Windows: janelas atrás dos ícones, bandeja, painel e renderização. -->
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
+    <!-- Versão de diagnóstico (tools/publish.sh com a opção diagnostico): abre com console mostrando os passos e erros. -->
+    <OutputType Condition="'$(Diagnostic)' == 'true'">Exe</OutputType>
     <!-- Windows 10 2004 (19041) ou mais novo: exigido pelo SkiaSharp.Views.WPF. -->
     <TargetFramework>net11.0-windows10.0.19041.0</TargetFramework>
     <UseWPF>true</UseWPF>
     <!-- Só para o ícone da bandeja (NotifyIcon) e a lista de monitores (Screen). -->
     <UseWindowsForms>true</UseWindowsForms>
     <AssemblyName>wallpaper4fun</AssemblyName>
-    <Version>1.0.1</Version>
+    <Version>1.0.3</Version>
     <RootNamespace>Wallpaper4Fun.App</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <!-- Ícone do .exe. Gerado a partir de design/icon/*.svg (veja CLAUDE.md). -->

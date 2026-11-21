@@ -25,8 +25,9 @@ dotnet run --project src/Wallpaper4Fun.App
 ./tools/publish.sh
 ```
 
-- Gera `publish/wallpaper4fun-win-x64.zip` com `wallpaper4fun/wallpaper4fun.exe` e a pasta `Videos`. O `.exe` leva o .NET dentro (self-contained, arquivo único comprimido, ~90 MB), então o PC não precisa ter o .NET instalado.
+- Gera `publish/wallpaper4fun-win-x64.zip`: uma pasta `wallpaper4fun` com o `wallpaper4fun.exe`, as DLLs do .NET (self-contained: o PC não precisa ter o .NET) e a pasta `Videos`. **Não use `.exe` único (`PublishSingleFile`)**: a v1.0.1, em arquivo único comprimido, não abria no Windows 10 testado, sem mensagem nenhuma; a versão com arquivos soltos abriu.
 - `./tools/publish.sh win-arm64` gera a versão para PCs com processador ARM.
+- `./tools/publish.sh --diagnostico` gera `publish/wallpaper4fun-diagnostico-win-x64.zip`: abre com uma janela de console que mostra cada passo da inicialização e qualquer erro, com os arquivos soltos (sem `.exe` único). Use quando o app "não abre" num PC. Os passos também vão para `%APPDATA%\wallpaper4fun\startup.log` (`StartupTrace`, que começa num `[ModuleInitializer]`, antes do `Main` do WPF).
 - Funciona no Mac também (o ícone do `.exe` entra mesmo assim). `publish/` está no `.gitignore`.
 - O `.exe` não é assinado: o Windows SmartScreen avisa na primeira vez ("Mais informações" → "Executar assim mesmo").
 - A pasta `Videos` precisa ficar ao lado do `.exe`.
@@ -35,7 +36,7 @@ dotnet run --project src/Wallpaper4Fun.App
 
 - Cada versão é uma **GitHub Release** com o zip anexado, criada pelo site (o `gh` não está instalado). Fluxo: suba `<Version>` em `Wallpaper4Fun.App.csproj`, rode `./tools/publish.sh`, faça o commit, crie a tag `v<versão>` e envie; depois o usuário cria a Release no site e anexa `publish/wallpaper4fun-win-x64.zip`.
 - A v1.0.0 também ficou em `releases/` com **Git LFS** (primeira tentativa). Não adicione versões novas ali: gasta a cota grátis de LFS (1 GB de armazenamento e 1 GB de download por mês).
-- **v1.0.0 não abria** no Windows (sumia sem mensagem). A v1.0.1 adiciona o `crash.log`, abre o painel primeiro e troca o formato do `.ico`.
+- Histórico: **v1.0.0** e **v1.0.1** não abriam no Windows 10 testado (sumiam sem mensagem). A v1.0.1 adicionou `crash.log`, painel primeiro e `.ico` com BMP. A **v1.0.2** troca o `.exe` único por arquivos soltos (o que fez abrir), pausa com app em tela cheia e recupera o vídeo que congela. A **v1.0.3** corrige "o vídeo trava muito e recarrega": vídeos convertidos para H.264 1080p 30 fps (o Appa era 4K 60 fps e o Fractal era HEVC), vigia que desiste depois de 2 recargas e painel escondido sem prévia tocando.
 
 ## Estrutura
 
@@ -58,6 +59,7 @@ A lógica fica no `Core`, sem WPF nem Win32, e é testada. O `App` é uma camada
 | `WallpaperManager.cs` | `IWallpaperDisplay`, `Playback` e o manager: configurações, mostrar/esconder, pausa, importar vídeo. Dispara `Changed` a cada mudança. | `WallpaperManagerTests` |
 | `ExtensionPoints.cs` | `IWallpaperSourceInfo`, `SourceRegistry<T>`, `ShaderStyle`, `ShaderCatalog`. | `ExtensionPointTests` |
 | `ShaderRenderer.cs` | Desenha um shader SkSL num canvas do Skia, em resolução reduzida (CPU). | `ShaderRendererTests` |
+| `PlaybackHealth.cs` | `FullscreenDetector` (a janela da frente cobre o monitor?) e `StallDetector` (o vídeo parou sozinho?). | `PlaybackHealthTests` |
 | `CrashLog.cs` | Grava erros inesperados num arquivo de texto, sem nunca lançar erro. | `CrashLogTests` |
 | `SmallRules.cs` | `ShaderClock`, `ClosePolicy`, `DesktopLayout` (posição de cada monitor dentro da WorkerW). | `SmallRulesTests` |
 | `Shaders/*.sksl` | Shaders em SkSL, embutidos no assembly. | `ExtensionPointTests` (compilam no Skia) |
@@ -67,6 +69,7 @@ A lógica fica no `Core`, sem WPF nem Win32, e é testada. O `App` é uma camada
 | `App.xaml.cs` | Monta e liga as peças; `AppPaths`. |
 | `Desktop/DesktopHost.cs` + `NativeMethods.cs` | Win32: pede ao Explorer a camada WorkerW (mensagem `0x052C` ao Progman) e pendura a janela atrás dos ícones. Trata o layout clássico e o do Windows 11 24H2+. Restaura o papel de parede original ao esconder. |
 | `Desktop/DesktopWindowPresenter.cs` | Implementa `IWallpaperDisplay`: uma janela por monitor, recriadas quando os monitores mudam. |
+| `Desktop/ForegroundWatcher.cs` | Olha a janela da frente e avisa o manager quando há um app em tela cheia. |
 | `Desktop/SystemEventObserver.cs` | Suspensão e bloqueio de tela → `SystemDidSuspend`/`SystemDidResume`. |
 | `TrayIcon.cs` | Ícone na bandeja (Windows Forms `NotifyIcon`). |
 | `Sources/WallpaperSource.cs` | `IWallpaperSource` (parte visual de um tipo), `AppSources.Standard` (registro), `WallpaperHost`, `ManagerBinding.BindTo`. |
@@ -79,6 +82,9 @@ Como funciona:
 - **Atrás dos ícones**: a janela é criada sem aparecer (`EnsureHandle`), pendurada na WorkerW (ou no Progman, no 24H2+), posicionada em pixels com `DesktopLayout` e só então mostrada.
 - **Pausa**: use `manager.Playback` (pausa do usuário ou sistema suspenso/bloqueado), não `Settings.IsPaused` direto.
 - **Fechar o painel**: `ClosePolicy` decide entre esconder (fica na bandeja) e sair.
+- **Pausa em tela cheia**: `ForegroundWatcher` olha a janela da frente a cada 1,5 s; se for um app em tela cheia (`FullscreenDetector`: jogo, vídeo), chama `manager.FullscreenAppChanged`, que entra no `EffectivePaused`.
+- **Vídeo que congela**: o `MediaElement` do WPF congela depois que um jogo em tela cheia toma a placa de vídeo (visto com Valorant). `VideoWallpaperView` recarrega o vídeo ao voltar de uma pausa, continuando do mesmo ponto, e um vigia (`StallDetector`, a cada 1 s) recarrega quando o vídeo deveria tocar mas ficou parado por 5 s. Depois de 2 recargas seguidas sem o vídeo andar, ele desiste (e anota no `startup.log`) até o vídeo voltar a andar ou haver uma pausa, para não entrar num ciclo de recarregar.
+- **Painel escondido não toca nada**: ao ir para a bandeja, o painel solta a prévia e as miniaturas (`OnVisibilityChanged`) e recria quando volta.
 - **Erros nunca somem em silêncio**: `ErrorReporter` (em `App.xaml.cs`) mostra uma mensagem e grava em `%APPDATA%\wallpaper4fun\crash.log` (`CrashLog`, no Core). Quando alguém disser que "não abriu", peça esse arquivo.
 - **Ordem de inicialização**: o painel abre primeiro; bandeja, eventos do sistema e wallpaper vêm depois, cada um com `ErrorReporter.Try`, para uma falha não esconder o app inteiro. A v1.0.0 abria o painel por último e sumia sem mensagem quando algo antes falhava.
 - **Shader na CPU**: `ShaderRenderer` desenha em metade da resolução e amplia. Se precisar de mais desempenho, troque `ShaderWallpaperView` para `SKGLElement` (GPU).
@@ -106,7 +112,8 @@ Cinco vídeos vêm dentro do app e aparecem como miniaturas no painel (tipo "Ví
 
 - `VideoCatalog` lista os vídeos (id + título). `settings.bundledVideoID` guarda o escolhido; `nil`/`null` = usar o importado.
 - Origem: bancos de vídeo gratuitos (nomes originais no estilo Pexels/Pixabay), escolhidos pelo usuário. **O "Appa na lua" mostra um personagem de Avatar (direitos autorais)**: o usuário escolheu incluir mesmo assim. Confira as licenças antes de distribuir o app publicamente.
-- O Fractal veio com 345 MB e foi recomprimido para HEVC 1080p a 3 Mbps (45 MB). Mantenha cada arquivo abaixo de 100 MB (limite do GitHub); comprima antes de adicionar.
+- **Formato dos vídeos no Windows: H.264, 1080p, no máximo 30 fps.** Nunca HEVC (o Windows 10 só toca com extensão paga) nem 4K/60 fps (pesado demais: o app decodifica uma cópia por monitor). Converta com `swift tools/transcode.swift <entrada> <saída.mp4> <Mbps>` (precisa de Mac com Xcode). Os vídeos da versão Mac são outros arquivos (lá HEVC e 4K tocam bem).
+- Mantenha cada arquivo abaixo de 100 MB (limite do GitHub). O Fractal (2 min) ficou com 75 MB a 5 Mbps.
 - Arquivos em `src/Wallpaper4Fun.App/Videos/<id>.mp4` e `<id>.jpg`, copiados para `Videos\` ao lado do `.exe` (`Content` no `.csproj`). `FolderVideoLocator` acha os arquivos.
 - `VideoCatalogTests.EveryVideoIsShippedWithApp` falha se faltar arquivo de algum vídeo do catálogo.
 

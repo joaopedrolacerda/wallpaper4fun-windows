@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using Microsoft.Win32;
 using Wallpaper4Fun.Core;
 
@@ -28,7 +29,11 @@ public sealed class VideoSource(IBundledVideoLocator locator) : IWallpaperSource
     }
 }
 
-/// <summary>Toca um vídeo mudo em loop, preenchendo a tela.</summary>
+/// <summary>
+/// Toca um vídeo mudo em loop, preenchendo a tela. O player do WPF pode congelar depois que um
+/// jogo em tela cheia toma a placa de vídeo; por isso o vídeo é recarregado ao voltar de uma
+/// pausa e sempre que o <see cref="StallDetector"/> percebe que ele parou sozinho.
+/// </summary>
 internal sealed class VideoWallpaperView : ContentControl
 {
     private readonly MediaElement _player = new()
@@ -38,34 +43,75 @@ internal sealed class VideoWallpaperView : ContentControl
         IsMuted = true,
         Stretch = Stretch.UniformToFill,
     };
+    private readonly DispatcherTimer _watchdog = new() { Interval = TimeSpan.FromSeconds(1) };
+    private readonly StallDetector _stall = new();
     private string? _path;
+    private Playback _playback = new(Paused: true, Speed: 1);
+    private TimeSpan _resumeAt;
+    private bool _reportedGiveUp;
 
     public VideoWallpaperView()
     {
         Background = Brushes.Black;
         Content = _player;
         _player.MediaEnded += (_, _) => Restart();
+        _player.MediaOpened += (_, _) => _player.Position = _resumeAt;
+        _player.MediaFailed += (_, e) => StartupTrace.Step($"vídeo falhou: {e.ErrorException}");
+        _watchdog.Tick += (_, _) => CheckForStall();
+        Loaded += (_, _) => _watchdog.Start();
+        Unloaded += (_, _) => _watchdog.Stop();
     }
 
     public void Apply(string? path, Playback playback)
     {
-        Load(path);
-        ApplyPlayback(playback);
+        var resuming = _playback.Paused && !playback.Paused && path == _path;
+        _playback = playback;
+        if (resuming) Reload();
+        else Load(path);
+        ApplyPlayback();
     }
 
     private void Load(string? path)
     {
         if (path == _path) return;
         _path = path;
+        _resumeAt = TimeSpan.Zero;
         _player.Source = path is null ? null : new Uri(path);
     }
 
-    private void ApplyPlayback(Playback playback)
+    /// <summary>Abre o vídeo de novo e continua de onde estava.</summary>
+    private void Reload()
     {
         if (_path is null) return;
-        _player.SpeedRatio = playback.Speed;
-        if (playback.Paused) _player.Pause();
+        _resumeAt = _player.Position;
+        _player.Close();
+        _player.Source = new Uri(_path);
+    }
+
+    private void ApplyPlayback()
+    {
+        if (_path is null) return;
+        _player.SpeedRatio = _playback.Speed;
+        if (_playback.Paused) _player.Pause();
         else _player.Play();
+    }
+
+    private void CheckForStall()
+    {
+        var shouldBePlaying = _path is not null && !_playback.Paused;
+        var stalled = _stall.Check(_player.Position, DateTimeOffset.Now, shouldBePlaying);
+        ReportGiveUpOnce();
+        if (!stalled) return;
+        StartupTrace.Step($"vídeo travado em {_player.Position:mm\\:ss}; recarregando {Path.GetFileName(_path)}");
+        Reload();
+        ApplyPlayback();
+    }
+
+    private void ReportGiveUpOnce()
+    {
+        if (_stall.GaveUp == _reportedGiveUp) return;
+        _reportedGiveUp = _stall.GaveUp;
+        if (_reportedGiveUp) StartupTrace.Step($"o vídeo {Path.GetFileName(_path)} não anda nem recarregando; parei de tentar");
     }
 
     private void Restart()
