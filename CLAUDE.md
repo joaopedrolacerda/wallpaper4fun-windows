@@ -31,6 +31,12 @@ dotnet run --project src/Wallpaper4Fun.App
 - O `.exe` não é assinado: o Windows SmartScreen avisa na primeira vez ("Mais informações" → "Executar assim mesmo").
 - A pasta `Videos` precisa ficar ao lado do `.exe`.
 
+### Versões publicadas
+
+- Os zips das versões ficam em `releases/wallpaper4fun-v<versão>-win-x64.zip`, guardados com **Git LFS** (`.gitattributes`), porque passam de 100 MB. Cada versão tem uma tag `v<versão>`.
+- Para publicar uma versão nova: `./tools/publish.sh`, copie o zip para `releases/` com o nome da versão, faça o commit e crie a tag.
+- Quem clonar o repo precisa do Git LFS instalado para baixar os zips. A cota grátis do GitHub é de 1 GB de armazenamento e 1 GB de download por mês, e cada download conta.
+
 ## Estrutura
 
 ```
