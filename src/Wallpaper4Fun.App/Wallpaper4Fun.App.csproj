@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Camada Windows: janelas atrás dos ícones, bandeja, painel e renderização. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!-- Windows 10 2004 (19041) ou mais novo: exigido pelo SkiaSharp.Views.WPF. -->
+    <TargetFramework>net11.0-windows10.0.19041.0</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <!-- Só para o ícone da bandeja (NotifyIcon) e a lista de monitores (Screen). -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>wallpaper4fun</AssemblyName>
+    <RootNamespace>Wallpaper4Fun.App</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- WPF e Windows Forms juntos têm tipos com o mesmo nome; usamos os do Forms só com nome completo. -->
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp.Views.WPF" Version="4.157.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Wallpaper4Fun.Core\Wallpaper4Fun.Core.csproj" />
+  </ItemGroup>
+
+</Project>

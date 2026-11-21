@@ -1,0 +1,38 @@
+<Window x:Class="Wallpaper4Fun.App.Panel.PanelWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="wallpaper4fun"
+        Width="560"
+        SizeToContent="Height"
+        ResizeMode="CanMinimize"
+        WindowStartupLocation="CenterScreen">
+    <StackPanel Margin="24">
+        <!-- Prévia ao vivo: a mesma view usada atrás dos ícones. -->
+        <Grid Height="300">
+            <Border x:Name="PreviewFrame" CornerRadius="12" Background="Black" ClipToBounds="True" />
+            <Border x:Name="DisabledBadge" Background="#CC333333" CornerRadius="12" Padding="10,6"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock Text="Wallpaper desligado" Foreground="White" FontWeight="SemiBold" />
+            </Border>
+        </Grid>
+
+        <StackPanel x:Name="SourceButtons" Orientation="Horizontal" Margin="0,16,0,0" />
+        <ContentControl x:Name="SourceControls" Margin="0,12,0,0" />
+
+        <CheckBox x:Name="EnabledBox" Content="Wallpaper ativo" Margin="0,16,0,0" Click="OnEnabledClick" />
+        <CheckBox x:Name="PausedBox" Content="Pausar animação" Margin="0,6,0,0" Click="OnPausedClick" />
+        <CheckBox x:Name="TrayBox" Content="Ao fechar, ficar só na bandeja" Margin="0,6,0,0" Click="OnTrayClick" />
+
+        <DockPanel Margin="0,12,0,0">
+            <TextBlock Text="Velocidade" VerticalAlignment="Center" Margin="0,0,12,0" />
+            <TextBlock Text="🐢" VerticalAlignment="Center" />
+            <TextBlock Text="🐇" VerticalAlignment="Center" DockPanel.Dock="Right" />
+            <Slider x:Name="SpeedSlider" Minimum="0.25" Maximum="3" Margin="8,0" />
+        </DockPanel>
+
+        <TextBlock x:Name="ErrorText" Foreground="Firebrick" TextWrapping="Wrap" Margin="0,12,0,0" />
+
+        <Button Content="Fechar e ir pra bandeja" HorizontalAlignment="Right" Padding="12,4"
+                Margin="0,16,0,0" Click="OnHideClick" ToolTip="Ctrl+W" />
+    </StackPanel>
+</Window>

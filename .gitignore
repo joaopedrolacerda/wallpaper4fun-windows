@@ -1,0 +1,14 @@
+# Build do .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+TestResults/
+
+# IDEs
+.idea/
+.vscode/
+
+# macOS
+.DS_Store

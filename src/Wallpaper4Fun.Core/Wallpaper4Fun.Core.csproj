@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Lógica do app, sem nada de Windows: compila e é testada em qualquer sistema. -->
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <RootNamespace>Wallpaper4Fun.Core</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Wallpaper4Fun.Core.Tests" />
+    <!-- Shaders em SkSL. Para adicionar um: crie Shaders/<id>.sksl e registre no ShaderCatalog. -->
+    <EmbeddedResource Include="Shaders\*.sksl" LogicalName="Shaders.%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" Version="4.157.0" />
+  </ItemGroup>
+
+</Project>

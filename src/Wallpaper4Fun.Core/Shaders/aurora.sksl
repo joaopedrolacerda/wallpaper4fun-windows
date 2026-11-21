@@ -1,0 +1,22 @@
+// Faixas de luz que ondulam no céu. Mesmo desenho do shader "aurora" da versão Mac.
+uniform float2 iResolution;
+uniform float iTime;
+
+half4 main(float2 fragCoord) {
+    float2 uv = fragCoord / iResolution;
+    float3 col = mix(float3(0.06, 0.08, 0.18), float3(0.01, 0.01, 0.04), uv.y);
+
+    for (int i = 0; i < 4; i++) {
+        float fi = float(i);
+        float band = 0.30 + 0.09 * fi
+                   + 0.07 * sin(uv.x * 2.5 + iTime * 0.35 + fi * 1.7)
+                   + 0.03 * sin(uv.x * 6.0 - iTime * 0.55 + fi * 2.3);
+        float d = uv.y - band;
+        // brilho que sobe acima da faixa e cai rápido abaixo dela
+        float glow = d < 0.0 ? exp(d * 9.0) : exp(-d * 60.0);
+        glow *= 0.55 + 0.45 * sin(uv.x * 9.0 + iTime * 0.8 + fi * 2.0);
+        float3 tint = 0.5 + 0.5 * cos(float3(0.0, 2.0, 4.0) + 3.4 + fi * 0.9 + iTime * 0.07);
+        col += glow * tint * 0.35;
+    }
+    return half4(half3(clamp(col, 0.0, 1.0)), 1.0);
+}

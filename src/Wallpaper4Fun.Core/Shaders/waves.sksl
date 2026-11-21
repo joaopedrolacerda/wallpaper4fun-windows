@@ -1,0 +1,20 @@
+// Camadas de ondas sobre um pôr do sol. Mesmo desenho do shader "waves" da versão Mac.
+uniform float2 iResolution;
+uniform float iTime;
+
+half4 main(float2 fragCoord) {
+    float2 uv = fragCoord / iResolution;
+    float3 col = mix(float3(0.98, 0.62, 0.42), float3(0.45, 0.22, 0.48), uv.y);
+
+    for (int i = 0; i < 6; i++) {
+        float fi = float(i);
+        float h = 0.42 + fi * 0.095
+                + 0.025 * sin(uv.x * (3.0 + fi) + iTime * (0.45 + fi * 0.12) + fi * 2.1)
+                + 0.010 * sin(uv.x * (11.0 + fi * 2.0) - iTime * 0.9);
+        float edge = 1.5 / iResolution.y;
+        float m = smoothstep(h, h + edge, uv.y);
+        float3 layer = mix(float3(0.30, 0.20, 0.45), float3(0.04, 0.05, 0.16), fi / 5.0);
+        col = mix(col, layer, m);
+    }
+    return half4(half3(col), 1.0);
+}

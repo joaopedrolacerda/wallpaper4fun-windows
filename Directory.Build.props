@@ -1,0 +1,11 @@
+<Project>
+  <!-- Configurações comuns a todos os projetos. -->
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Permite compilar o app WPF fora do Windows (ex.: no Mac). Rodar, só no Windows. -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+</Project>
