@@ -33,9 +33,9 @@ dotnet run --project src/Wallpaper4Fun.App
 
 ### Versões publicadas
 
-- Os zips das versões ficam em `releases/wallpaper4fun-v<versão>-win-x64.zip`, guardados com **Git LFS** (`.gitattributes`), porque passam de 100 MB. Cada versão tem uma tag `v<versão>`.
-- Para publicar uma versão nova: `./tools/publish.sh`, copie o zip para `releases/` com o nome da versão, faça o commit e crie a tag.
-- Quem clonar o repo precisa do Git LFS instalado para baixar os zips. A cota grátis do GitHub é de 1 GB de armazenamento e 1 GB de download por mês, e cada download conta.
+- Cada versão é uma **GitHub Release** com o zip anexado, criada pelo site (o `gh` não está instalado). Fluxo: suba `<Version>` em `Wallpaper4Fun.App.csproj`, rode `./tools/publish.sh`, faça o commit, crie a tag `v<versão>` e envie; depois o usuário cria a Release no site e anexa `publish/wallpaper4fun-win-x64.zip`.
+- A v1.0.0 também ficou em `releases/` com **Git LFS** (primeira tentativa). Não adicione versões novas ali: gasta a cota grátis de LFS (1 GB de armazenamento e 1 GB de download por mês).
+- **v1.0.0 não abria** no Windows (sumia sem mensagem). A v1.0.1 adiciona o `crash.log`, abre o painel primeiro e troca o formato do `.ico`.
 
 ## Estrutura
 
@@ -58,6 +58,7 @@ A lógica fica no `Core`, sem WPF nem Win32, e é testada. O `App` é uma camada
 | `WallpaperManager.cs` | `IWallpaperDisplay`, `Playback` e o manager: configurações, mostrar/esconder, pausa, importar vídeo. Dispara `Changed` a cada mudança. | `WallpaperManagerTests` |
 | `ExtensionPoints.cs` | `IWallpaperSourceInfo`, `SourceRegistry<T>`, `ShaderStyle`, `ShaderCatalog`. | `ExtensionPointTests` |
 | `ShaderRenderer.cs` | Desenha um shader SkSL num canvas do Skia, em resolução reduzida (CPU). | `ShaderRendererTests` |
+| `CrashLog.cs` | Grava erros inesperados num arquivo de texto, sem nunca lançar erro. | `CrashLogTests` |
 | `SmallRules.cs` | `ShaderClock`, `ClosePolicy`, `DesktopLayout` (posição de cada monitor dentro da WorkerW). | `SmallRulesTests` |
 | `Shaders/*.sksl` | Shaders em SkSL, embutidos no assembly. | `ExtensionPointTests` (compilam no Skia) |
 
@@ -78,6 +79,8 @@ Como funciona:
 - **Atrás dos ícones**: a janela é criada sem aparecer (`EnsureHandle`), pendurada na WorkerW (ou no Progman, no 24H2+), posicionada em pixels com `DesktopLayout` e só então mostrada.
 - **Pausa**: use `manager.Playback` (pausa do usuário ou sistema suspenso/bloqueado), não `Settings.IsPaused` direto.
 - **Fechar o painel**: `ClosePolicy` decide entre esconder (fica na bandeja) e sair.
+- **Erros nunca somem em silêncio**: `ErrorReporter` (em `App.xaml.cs`) mostra uma mensagem e grava em `%APPDATA%\wallpaper4fun\crash.log` (`CrashLog`, no Core). Quando alguém disser que "não abriu", peça esse arquivo.
+- **Ordem de inicialização**: o painel abre primeiro; bandeja, eventos do sistema e wallpaper vêm depois, cada um com `ErrorReporter.Try`, para uma falha não esconder o app inteiro. A v1.0.0 abria o painel por último e sumia sem mensagem quando algo antes falhava.
 - **Shader na CPU**: `ShaderRenderer` desenha em metade da resolução e amplia. Se precisar de mais desempenho, troque `ShaderWallpaperView` para `SKGLElement` (GPU).
 - WPF e Windows Forms juntos têm tipos com o mesmo nome: os do Forms são usados com o alias `Forms.` (os `using` globais deles estão removidos no `.csproj`).
 
@@ -93,6 +96,7 @@ Este código foi escrito e testado num Mac. **O app nunca foi aberto no Windows.
 Café numa mesa com paisagem noturna (lua, montanhas e uma aurora suave), igual ao da versão Mac.
 
 - Fontes: `design/icon/icon-full.svg` (64 px para cima) e `design/icon/icon-small.svg` (versão simplificada, 32 px para baixo, porque os detalhes somem). As mesmas fontes estão no repo Mac, em `Design/Icon/`. Mantenha as duas cópias iguais.
+- O `.ico` usa BMP de 32 bits do 16 ao 128 px e PNG só no 256, que é o formato que o Windows e o `System.Drawing.Icon` esperam.
 - `src/Wallpaper4Fun.App/Assets/wallpaper4fun.ico` é gerado: é usado no `.exe` (`ApplicationIcon`), na janela do painel e na bandeja (`AppIcon.Load`).
 - Para gerar de novo depois de mudar os SVGs: `./tools/IconKit/generate.sh`. Passe a pasta do repo Mac (`../Untitled\ Project\ 2`) para gerar também o AppIcon de lá. O `IconKit` usa Svg.Skia e não faz parte da solução.
 

@@ -9,6 +9,7 @@
     <!-- Só para o ícone da bandeja (NotifyIcon) e a lista de monitores (Screen). -->
     <UseWindowsForms>true</UseWindowsForms>
     <AssemblyName>wallpaper4fun</AssemblyName>
+    <Version>1.0.1</Version>
     <RootNamespace>Wallpaper4Fun.App</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <!-- Ícone do .exe. Gerado a partir de design/icon/*.svg (veja CLAUDE.md). -->

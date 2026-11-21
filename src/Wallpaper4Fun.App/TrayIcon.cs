@@ -1,3 +1,5 @@
+using System.ComponentModel;
+using System.IO;
 using Wallpaper4Fun.Core;
 using Forms = System.Windows.Forms;
 
@@ -11,8 +13,16 @@ internal static class AppIcon
     /// <summary>Carrega o tamanho mais próximo do pedido; na bandeja, usa a versão simplificada (16–32 px).</summary>
     public static System.Drawing.Icon Load(System.Drawing.Size size)
     {
-        using var stream = System.Windows.Application.GetResourceStream(ResourceUri).Stream;
-        return new System.Drawing.Icon(stream, size);
+        try
+        {
+            using var stream = System.Windows.Application.GetResourceStream(ResourceUri).Stream;
+            return new System.Drawing.Icon(stream, size);
+        }
+        catch (Exception e) when (e is ArgumentException or IOException or Win32Exception)
+        {
+            // Melhor um ícone genérico na bandeja do que o app não abrir.
+            return System.Drawing.SystemIcons.Application;
+        }
     }
 }
 
