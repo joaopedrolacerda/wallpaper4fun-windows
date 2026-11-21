@@ -69,6 +69,14 @@ Este código foi escrito e testado num Mac. **O app nunca foi aberto no Windows.
 - Vários monitores com escalas (DPI) diferentes.
 - Restaurar o papel de parede ao sair.
 
+## Ícone
+
+Café numa mesa com paisagem noturna (lua, montanhas e uma aurora suave), igual ao da versão Mac.
+
+- Fontes: `design/icon/icon-full.svg` (64 px para cima) e `design/icon/icon-small.svg` (versão simplificada, 32 px para baixo, porque os detalhes somem). As mesmas fontes estão no repo Mac, em `Design/Icon/`. Mantenha as duas cópias iguais.
+- `src/Wallpaper4Fun.App/Assets/wallpaper4fun.ico` é gerado: é usado no `.exe` (`ApplicationIcon`), na janela do painel e na bandeja (`AppIcon.Load`).
+- Para gerar de novo depois de mudar os SVGs: `./tools/IconKit/generate.sh`. Passe a pasta do repo Mac (`../Untitled\ Project\ 2`) para gerar também o AppIcon de lá. O `IconKit` usa Svg.Skia e não faz parte da solução.
+
 ## Como adicionar um shader
 
 1. Crie `src/Wallpaper4Fun.Core/Shaders/<id>.sksl` com `uniform float2 iResolution; uniform float iTime;` e `half4 main(float2 fragCoord)`.

@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="1024" height="1024">
+  <!-- wallpaper4fun: café à noite. Ícone completo (tamanhos de 64 px para cima). -->
+  <defs><clipPath id="sq"><rect width="160" height="160" rx="36"/></clipPath></defs>
+  <g clip-path="url(#sq)">
+    <rect width="160" height="160" fill="#141B45"/>
+    <rect y="46" width="160" height="30" fill="#1B2556"/>
+    <rect y="70" width="160" height="40" fill="#222E66"/>
+    <path d="M-5 54 C25 38 55 62 92 46 S142 34 165 42 L165 58 C138 52 112 72 80 64 S22 60 -5 70 Z" fill="#5FD3B5" fill-opacity="0.28"/>
+    <path d="M-5 62 C30 50 62 70 98 56 S145 48 165 54 L165 64 C138 62 110 78 78 72 S20 70 -5 76 Z" fill="#8B7CF6" fill-opacity="0.22"/>
+    <circle cx="120" cy="30" r="11" fill="#FFF1C1"/>
+    <circle cx="125" cy="26" r="10" fill="#141B45"/>
+    <circle cx="28" cy="24" r="1.6" fill="#FFFFFF"/>
+    <circle cx="58" cy="16" r="1.2" fill="#FFFFFF" fill-opacity="0.8"/>
+    <circle cx="84" cy="30" r="1.4" fill="#FFFFFF"/>
+    <circle cx="146" cy="50" r="1.1" fill="#FFFFFF" fill-opacity="0.8"/>
+    <circle cx="14" cy="44" r="1" fill="#FFFFFF" fill-opacity="0.7"/>
+    <circle cx="100" cy="14" r="1" fill="#FFFFFF" fill-opacity="0.7"/>
+    <path d="M-5 90 L24 66 L40 78 L66 54 L92 80 L112 68 L134 82 L150 74 L165 84 L165 165 L-5 165 Z" fill="#33407F"/>
+    <path d="M66 54 L74 61 L68 62 L62 58 Z" fill="#C9D3FF" fill-opacity="0.55"/>
+    <path d="M24 66 L30 71 L25 72 L20 69 Z" fill="#C9D3FF" fill-opacity="0.45"/>
+    <path d="M-5 98 C28 88 58 96 90 100 S140 90 165 96 L165 165 L-5 165 Z" fill="#26306A"/>
+    <path d="M-5 106 C35 100 70 108 105 106 S150 102 165 104 L165 165 L-5 165 Z" fill="#1E2758"/>
+    <rect y="112" width="160" height="48" fill="#6B4736"/>
+    <rect y="112" width="160" height="4" fill="#87604B"/>
+    <path d="M0 128 C40 126 70 132 160 129" fill="none" stroke="#5A3A2C" stroke-width="1.2"/>
+    <path d="M0 143 C50 141 90 147 160 144" fill="none" stroke="#5A3A2C" stroke-width="1.2"/>
+    <ellipse cx="80" cy="127" rx="38" ry="5" fill="#4E3226" fill-opacity="0.6"/>
+    <ellipse cx="80" cy="123" rx="34" ry="6.5" fill="#E9DDCD"/>
+    <ellipse cx="80" cy="122" rx="26" ry="3.6" fill="#F6EEE3"/>
+    <path d="M57 90 L103 90 L99 115 C98 120 94 122 89 122 L71 122 C66 122 62 120 61 115 Z" fill="#F6EEE3"/>
+    <path d="M63 92 L68 92 L66 116 C65 118 64 118 64 116 Z" fill="#FFFFFF" fill-opacity="0.7"/>
+    <path d="M102 96 C114 95 115 111 100 111" fill="none" stroke="#F6EEE3" stroke-width="5" stroke-linecap="round"/>
+    <ellipse cx="80" cy="90.5" rx="23" ry="4" fill="#E9DDCD"/>
+    <ellipse cx="80" cy="91" rx="20" ry="3" fill="#6B3F28"/>
+    <path d="M72 82 C67 76 77 72 71 63" fill="none" stroke="#F6EEE3" stroke-width="3" stroke-linecap="round" stroke-opacity="0.65"/>
+    <path d="M86 82 C81 75 91 71 85 60" fill="none" stroke="#F6EEE3" stroke-width="3" stroke-linecap="round" stroke-opacity="0.65"/>
+  </g>
+</svg>

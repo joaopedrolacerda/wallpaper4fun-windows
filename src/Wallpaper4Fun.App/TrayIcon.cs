@@ -3,6 +3,19 @@ using Forms = System.Windows.Forms;
 
 namespace Wallpaper4Fun.App;
 
+/// <summary>O ícone do app (café à noite), embutido como recurso.</summary>
+internal static class AppIcon
+{
+    private static readonly Uri ResourceUri = new("pack://application:,,,/Assets/wallpaper4fun.ico");
+
+    /// <summary>Carrega o tamanho mais próximo do pedido; na bandeja, usa a versão simplificada (16–32 px).</summary>
+    public static System.Drawing.Icon Load(System.Drawing.Size size)
+    {
+        using var stream = System.Windows.Application.GetResourceStream(ResourceUri).Stream;
+        return new System.Drawing.Icon(stream, size);
+    }
+}
+
 /// <summary>Ícone na bandeja do sistema (perto do relógio) com os atalhos do app.</summary>
 internal sealed class TrayIcon : IDisposable
 {
@@ -46,7 +59,7 @@ internal sealed class TrayIcon : IDisposable
     {
         var icon = new Forms.NotifyIcon
         {
-            Icon = System.Drawing.SystemIcons.Application,
+            Icon = AppIcon.Load(Forms.SystemInformation.SmallIconSize),
             Text = "wallpaper4fun",
             ContextMenuStrip = menu,
             Visible = true,

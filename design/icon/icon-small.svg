@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="1024" height="1024">
+  <!-- wallpaper4fun: café à noite. Versão simplificada (32 px para baixo). -->
+  <defs><clipPath id="sq"><rect width="160" height="160" rx="36"/></clipPath></defs>
+  <g clip-path="url(#sq)">
+    <rect width="160" height="160" fill="#141B45"/>
+    <circle cx="122" cy="34" r="16" fill="#FFF1C1"/>
+    <circle cx="130" cy="28" r="15" fill="#141B45"/>
+    <path d="M-5 92 L40 60 L80 86 L118 62 L165 90 L165 165 L-5 165 Z" fill="#33407F"/>
+    <rect y="110" width="160" height="50" fill="#6B4736"/>
+    <path d="M48 76 L112 76 L106 116 C105 122 100 124 94 124 L66 124 C60 124 55 122 54 116 Z" fill="#F6EEE3"/>
+    <path d="M110 84 C128 82 128 108 106 108" fill="none" stroke="#F6EEE3" stroke-width="9" stroke-linecap="round"/>
+    <ellipse cx="80" cy="77" rx="30" ry="5" fill="#6B3F28"/>
+  </g>
+</svg>

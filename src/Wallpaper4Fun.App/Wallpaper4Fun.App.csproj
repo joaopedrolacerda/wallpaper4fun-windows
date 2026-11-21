@@ -11,12 +11,19 @@
     <AssemblyName>wallpaper4fun</AssemblyName>
     <RootNamespace>Wallpaper4Fun.App</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- Ícone do .exe. Gerado a partir de design/icon/*.svg (veja CLAUDE.md). -->
+    <ApplicationIcon>Assets\wallpaper4fun.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <!-- WPF e Windows Forms juntos têm tipos com o mesmo nome; usamos os do Forms só com nome completo. -->
     <Using Remove="System.Windows.Forms" />
     <Using Remove="System.Drawing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Também embutido como recurso WPF, para a janela do painel e a bandeja. -->
+    <Resource Include="Assets\wallpaper4fun.ico" />
   </ItemGroup>
 
   <ItemGroup>
