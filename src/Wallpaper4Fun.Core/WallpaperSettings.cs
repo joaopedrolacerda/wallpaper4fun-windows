@@ -16,7 +16,11 @@ public sealed record WallpaperSettings
     public bool IsPaused { get; init; }
     public bool IsEnabled { get; init; } = true;
     public bool HideToTrayWhenClosed { get; init; } = true;
+    /// <summary>Vídeo importado pelo usuário (nome do arquivo na <see cref="VideoLibrary"/>).</summary>
     public string? VideoFileName { get; init; }
+
+    /// <summary>Vídeo do app escolhido (<see cref="VideoCatalog"/>). <c>null</c> = usar o vídeo importado.</summary>
+    public string? BundledVideoId { get; init; } = VideoCatalog.DefaultId;
 
     public static WallpaperSettings Default { get; } = new();
 }

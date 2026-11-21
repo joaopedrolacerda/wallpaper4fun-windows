@@ -35,6 +35,7 @@ A lógica fica no `Core`, sem WPF nem Win32, e é testada. O `App` é uma camada
 |---|---|---|
 | `WallpaperSettings.cs` | `SourceIds` e `WallpaperSettings` (record imutável com tudo que o usuário escolhe). | `SettingsStoreTests` |
 | `SettingsStore.cs` | Lê e grava as configurações em JSON. Arquivo corrompido volta ao padrão. | `SettingsStoreTests` |
+| `VideoCatalog.cs` | `BundledVideo`, `VideoCatalog` (vídeos padrão), `IBundledVideoLocator` e `FolderVideoLocator`. | `VideoCatalogTests` |
 | `VideoLibrary.cs` | Copia vídeos para a pasta do app, substitui o anterior, encontra o salvo. | `VideoLibraryTests` |
 | `WallpaperManager.cs` | `IWallpaperDisplay`, `Playback` e o manager: configurações, mostrar/esconder, pausa, importar vídeo. Dispara `Changed` a cada mudança. | `WallpaperManagerTests` |
 | `ExtensionPoints.cs` | `IWallpaperSourceInfo`, `SourceRegistry<T>`, `ShaderStyle`, `ShaderCatalog`. | `ExtensionPointTests` |
@@ -76,6 +77,22 @@ Café numa mesa com paisagem noturna (lua, montanhas e uma aurora suave), igual 
 - Fontes: `design/icon/icon-full.svg` (64 px para cima) e `design/icon/icon-small.svg` (versão simplificada, 32 px para baixo, porque os detalhes somem). As mesmas fontes estão no repo Mac, em `Design/Icon/`. Mantenha as duas cópias iguais.
 - `src/Wallpaper4Fun.App/Assets/wallpaper4fun.ico` é gerado: é usado no `.exe` (`ApplicationIcon`), na janela do painel e na bandeja (`AppIcon.Load`).
 - Para gerar de novo depois de mudar os SVGs: `./tools/IconKit/generate.sh`. Passe a pasta do repo Mac (`../Untitled\ Project\ 2`) para gerar também o AppIcon de lá. O `IconKit` usa Svg.Skia e não faz parte da solução.
+
+## Vídeos padrão
+
+Cinco vídeos vêm dentro do app e aparecem como miniaturas no painel (tipo "Vídeo"): Gato no pôr do sol (padrão), Moto na estrada, Appa na lua, Planeta vermelho e Fractal violeta. O usuário ainda pode importar um vídeo próprio; o importado fica guardado e dá para voltar a ele.
+
+- `VideoCatalog` lista os vídeos (id + título). `settings.bundledVideoID` guarda o escolhido; `nil`/`null` = usar o importado.
+- Origem: bancos de vídeo gratuitos (nomes originais no estilo Pexels/Pixabay), escolhidos pelo usuário. **O "Appa na lua" mostra um personagem de Avatar (direitos autorais)**: o usuário escolheu incluir mesmo assim. Confira as licenças antes de distribuir o app publicamente.
+- O Fractal veio com 345 MB e foi recomprimido para HEVC 1080p a 3 Mbps (45 MB). Mantenha cada arquivo abaixo de 100 MB (limite do GitHub); comprima antes de adicionar.
+- Arquivos em `src/Wallpaper4Fun.App/Videos/<id>.mp4` e `<id>.jpg`, copiados para `Videos\` ao lado do `.exe` (`Content` no `.csproj`). `FolderVideoLocator` acha os arquivos.
+- `VideoCatalogTests.EveryVideoIsShippedWithApp` falha se faltar arquivo de algum vídeo do catálogo.
+
+### Como adicionar um vídeo padrão
+
+1. Coloque `<id>.mp4` e uma miniatura `<id>.jpg` (~480 px de largura) em `src/Wallpaper4Fun.App/Videos/`.
+2. Adicione `new("<id>", "Título")` em `VideoCatalog.All`.
+3. Faça o mesmo na versão Mac.
 
 ## Como adicionar um shader
 

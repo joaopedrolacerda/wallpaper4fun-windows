@@ -24,7 +24,7 @@ public static class AppSources
 {
     public static SourceRegistry<IWallpaperSource> Standard { get; } = new([
         new ShaderSource(),
-        new VideoSource(),
+        new VideoSource(AppPaths.BundledVideos),
     ]);
 }
 

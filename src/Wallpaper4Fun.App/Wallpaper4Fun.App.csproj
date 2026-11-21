@@ -24,6 +24,8 @@
   <ItemGroup>
     <!-- Também embutido como recurso WPF, para a janela do painel e a bandeja. -->
     <Resource Include="Assets\wallpaper4fun.ico" />
+    <!-- Vídeos padrão: copiados para a pasta Videos ao lado do .exe (veja VideoCatalog). -->
+    <Content Include="Videos\*.mp4;Videos\*.jpg" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

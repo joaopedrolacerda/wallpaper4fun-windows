@@ -38,7 +38,7 @@ public partial class App : Application
     }
 
     private static WallpaperManager CreateManager(IWallpaperDisplay display) =>
-        new(new SettingsStore(AppPaths.SettingsFile), new VideoLibrary(AppPaths.VideosFolder), display);
+        new(new SettingsStore(AppPaths.SettingsFile), new VideoLibrary(AppPaths.VideosFolder), AppPaths.BundledVideos, display);
 
     private void ShowPanel()
     {
@@ -62,4 +62,7 @@ internal static class AppPaths
 
     public static string SettingsFile => Path.Combine(Root, "settings.json");
     public static string VideosFolder => Path.Combine(Root, "Wallpapers");
+
+    /// <summary>Vídeos padrão, instalados na pasta Videos ao lado do .exe.</summary>
+    public static FolderVideoLocator BundledVideos { get; } = new(Path.Combine(AppContext.BaseDirectory, "Videos"));
 }

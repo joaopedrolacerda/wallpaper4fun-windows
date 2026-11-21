@@ -21,23 +21,29 @@ public sealed class WallpaperManager
 {
     private readonly SettingsStore _store;
     private readonly VideoLibrary _library;
+    private readonly IBundledVideoLocator _bundledVideos;
     private readonly IWallpaperDisplay _display;
     private bool _isStarted;
 
-    public WallpaperManager(SettingsStore store, VideoLibrary library, IWallpaperDisplay display)
+    public WallpaperManager(SettingsStore store, VideoLibrary library, IBundledVideoLocator bundledVideos, IWallpaperDisplay display)
     {
         _store = store;
         _library = library;
+        _bundledVideos = bundledVideos;
         _display = display;
         Settings = store.Load();
-        VideoPath = Settings.VideoFileName is { } name ? library.Video(name) : null;
+        ImportedVideoPath = Settings.VideoFileName is { } name ? library.Video(name) : null;
     }
 
     /// <summary>Disparado depois de qualquer mudança de estado, para a interface se atualizar.</summary>
     public event EventHandler? Changed;
 
     public WallpaperSettings Settings { get; private set; }
-    public string? VideoPath { get; private set; }
+    /// <summary>Vídeo importado pelo usuário, guardado mesmo quando um vídeo do app está escolhido.</summary>
+    public string? ImportedVideoPath { get; private set; }
+
+    /// <summary>O vídeo que deve tocar: o do app escolhido ou, se nenhum, o importado.</summary>
+    public string? VideoPath => Settings.BundledVideoId is { } id ? BundledVideoPath(id) : ImportedVideoPath;
     public string? LastError { get; private set; }
     public bool SystemSuspended { get; private set; }
 
@@ -68,7 +74,7 @@ public sealed class WallpaperManager
     {
         try
         {
-            SelectVideo(_library.ImportVideo(sourcePath, replacing: VideoPath));
+            UseImportedVideo(_library.ImportVideo(sourcePath, replacing: ImportedVideoPath));
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException)
         {
@@ -77,12 +83,22 @@ public sealed class WallpaperManager
         }
     }
 
-    private void SelectVideo(string path)
+    public void SelectBundledVideo(string id) => ChooseVideo(bundledId: id);
+
+    public void SelectImportedVideo() => ChooseVideo(bundledId: null);
+
+    private void UseImportedVideo(string path)
     {
-        VideoPath = path;
+        ImportedVideoPath = path;
         LastError = null;
-        Update(s => s with { SourceId = SourceIds.Video, VideoFileName = Path.GetFileName(path) });
+        Update(s => s with { SourceId = SourceIds.Video, BundledVideoId = null, VideoFileName = Path.GetFileName(path) });
     }
+
+    private void ChooseVideo(string? bundledId) =>
+        Update(s => s with { SourceId = SourceIds.Video, BundledVideoId = bundledId });
+
+    private string? BundledVideoPath(string id) =>
+        VideoCatalog.Video(id) is { } video ? _bundledVideos.VideoPath(video) : null;
 
     private void SetSystemSuspended(bool suspended)
     {
