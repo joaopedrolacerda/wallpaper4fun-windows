@@ -41,6 +41,14 @@ public sealed class ClosePolicyTests
 
     [Fact(DisplayName = "com a opção desligada, fechar o painel encerra o app")]
     public void Quits() => Assert.Equal(PanelCloseAction.Quit, ClosePolicy.Decide(hideToTrayWhenClosed: false));
+
+    [Fact(DisplayName = "com a opção ligada, minimizar o painel tira ele da barra de tarefas e deixa só na bandeja")]
+    public void MinimizeHidesToTray() =>
+        Assert.Equal(PanelMinimizeAction.HideToTray, ClosePolicy.DecideMinimize(hideToTrayWhenClosed: true));
+
+    [Fact(DisplayName = "com a opção desligada, minimizar funciona como sempre (fica na barra de tarefas)")]
+    public void MinimizeStaysInTaskbar() =>
+        Assert.Equal(PanelMinimizeAction.StayInTaskbar, ClosePolicy.DecideMinimize(hideToTrayWhenClosed: false));
 }
 
 public sealed class DesktopLayoutTests

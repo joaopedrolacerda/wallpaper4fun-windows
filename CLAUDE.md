@@ -29,14 +29,32 @@ dotnet run --project src/Wallpaper4Fun.App
 - `./tools/publish.sh win-arm64` gera a versão para PCs com processador ARM.
 - `./tools/publish.sh --diagnostico` gera `publish/wallpaper4fun-diagnostico-win-x64.zip`: abre com uma janela de console que mostra cada passo da inicialização e qualquer erro, com os arquivos soltos (sem `.exe` único). Use quando o app "não abre" num PC. Os passos também vão para `%APPDATA%\wallpaper4fun\startup.log` (`StartupTrace`, que começa num `[ModuleInitializer]`, antes do `Main` do WPF).
 - Funciona no Mac também (o ícone do `.exe` entra mesmo assim). `publish/` está no `.gitignore`.
-- O `.exe` não é assinado: o Windows SmartScreen avisa na primeira vez ("Mais informações" → "Executar assim mesmo").
+- O `.exe` não é assinado: o Windows SmartScreen avisa "fonte não confiável"/"editor desconhecido" na primeira vez ("Mais informações" → "Executar assim mesmo"). Isso **não se resolve com código**: só some com o app assinado por um certificado de assinatura de código (pago, emitido para uma pessoa ou empresa verificada; com certificado comum o aviso some aos poucos, conforme o app ganha reputação) ou com o app distribuído pela Microsoft Store (a loja assina). Certificado autoassinado não adianta.
 - A pasta `Videos` precisa ficar ao lado do `.exe`.
 
 ### Versões publicadas
 
-- Cada versão é uma **GitHub Release** com o zip anexado, criada pelo site (o `gh` não está instalado). Fluxo: suba `<Version>` em `Wallpaper4Fun.App.csproj`, rode `./tools/publish.sh`, faça o commit, crie a tag `v<versão>` e envie; depois o usuário cria a Release no site e anexa `publish/wallpaper4fun-win-x64.zip`.
-- A v1.0.0 também ficou em `releases/` com **Git LFS** (primeira tentativa). Não adicione versões novas ali: gasta a cota grátis de LFS (1 GB de armazenamento e 1 GB de download por mês).
-- Histórico: **v1.0.0** e **v1.0.1** não abriam no Windows 10 testado (sumiam sem mensagem). A v1.0.1 adicionou `crash.log`, painel primeiro e `.ico` com BMP. A **v1.0.2** troca o `.exe` único por arquivos soltos (o que fez abrir), pausa com app em tela cheia e recupera o vídeo que congela. A **v1.0.3** corrige "o vídeo trava muito e recarrega": vídeos convertidos para H.264 1080p 30 fps (o Appa era 4K 60 fps e o Fractal era HEVC), vigia que desiste depois de 2 recargas e painel escondido sem prévia tocando.
+O `.github/workflows/release.yml` monta a Release sozinho, numa máquina Windows do GitHub:
+
+1. Suba `<Version>` em `src/Wallpaper4Fun.App/Wallpaper4Fun.App.csproj` (ex.: `1.0.5`).
+2. Faça o commit, crie a tag `v1.0.5` e envie (`git push origin main --follow-tags`).
+3. O workflow confere se a tag bate com a `<Version>`, roda os testes no Windows, publica e cria a Release com:
+   - `wallpaper4fun-<versão>-win-x64.zip`: a pasta com o `.exe`, para baixar e usar.
+   - `wallpaper4fun-<versão>-store.msix`: o pacote para a Microsoft Store, feito com o `makeappx` do Windows SDK.
+
+O texto da Release vem de `packaging/release-notes.md` mais a lista de commits. Também dá para rodar à mão (aba Actions → Release → Run workflow): gera os arquivos como artefatos, sem criar Release.
+
+- A v1.0.0 também ficou em `releases/` com **Git LFS** (primeira tentativa). Não adicione versões novas ali: gasta a cota grátis de LFS.
+- Histórico: **v1.0.0** e **v1.0.1** não abriam no Windows 10 testado (sumiam sem mensagem). A v1.0.1 adicionou `crash.log`, painel primeiro e `.ico` com BMP. A **v1.0.2** troca o `.exe` único por arquivos soltos (o que fez abrir), pausa com app em tela cheia e recupera o vídeo que congela. A **v1.0.4** faz minimizar também ir para a bandeja. A **v1.0.3** corrige "o vídeo trava muito e recarrega": vídeos convertidos para H.264 1080p 30 fps (o Appa era 4K 60 fps e o Fractal era HEVC), vigia que desiste depois de 2 recargas e painel escondido sem prévia tocando.
+
+### Microsoft Store
+
+- O pacote é MSIX, montado a partir de `packaging/msix/AppxManifest.template.xml` (app de desktop com `runFullTrust`), dos logos em `packaging/msix/Assets` (gerados pelo `tools/IconKit/generate.sh`) e da identidade em `packaging/msix/store-identity.json`.
+- **`store-identity.json` precisa dos valores reais do Partner Center** (Gerenciamento do produto → Identidade do produto: `Package/Identity/Name`, `Package/Identity/Publisher` e `Package/Properties/PublisherDisplayName`). Com os valores de exemplo (`SUBSTITUA…`), o `.msix` é gerado mas a loja recusa o envio.
+- O `.msix` não é assinado: não instala com dois cliques; a loja assina ao publicar.
+- A versão do pacote é `<Version>.0` (a loja exige o último número zero).
+- Passos do usuário: criar a conta de desenvolvedor individual no Partner Center (gratuita, com verificação de identidade), reservar o nome "wallpaper4fun", copiar a identidade para o `store-identity.json`, gerar uma nova versão e enviar o `.msix` numa submissão (com descrição, capturas de tela e classificação etária).
+- Risco na análise da loja: o vídeo "Appa na lua" usa um personagem com direitos autorais.
 
 ## Estrutura
 
@@ -81,7 +99,7 @@ Como funciona:
 - **Fluxo**: painel e bandeja chamam `manager.Update(s => s with { ... })`. O manager salva, mostra/esconde as janelas se `IsEnabled` mudou e dispara `Changed`. As views se atualizam com `BindTo`.
 - **Atrás dos ícones**: a janela é criada sem aparecer (`EnsureHandle`), pendurada na WorkerW (ou no Progman, no 24H2+), posicionada em pixels com `DesktopLayout` e só então mostrada.
 - **Pausa**: use `manager.Playback` (pausa do usuário ou sistema suspenso/bloqueado), não `Settings.IsPaused` direto.
-- **Fechar o painel**: `ClosePolicy` decide entre esconder (fica na bandeja) e sair.
+- **Fechar ou minimizar o painel**: `ClosePolicy` decide. Com "Ao fechar ou minimizar, ficar só na bandeja" ligado (`HideToTrayWhenClosed`), fechar e minimizar escondem o painel e tiram ele da barra de tarefas; desligado, fechar encerra o app e minimizar funciona como sempre.
 - **Pausa em tela cheia**: `ForegroundWatcher` olha a janela da frente a cada 1,5 s; se for um app em tela cheia (`FullscreenDetector`: jogo, vídeo), chama `manager.FullscreenAppChanged`, que entra no `EffectivePaused`.
 - **Vídeo que congela**: o `MediaElement` do WPF congela depois que um jogo em tela cheia toma a placa de vídeo (visto com Valorant). `VideoWallpaperView` recarrega o vídeo ao voltar de uma pausa, continuando do mesmo ponto, e um vigia (`StallDetector`, a cada 1 s) recarrega quando o vídeo deveria tocar mas ficou parado por 5 s. Depois de 2 recargas seguidas sem o vídeo andar, ele desiste (e anota no `startup.log`) até o vídeo voltar a andar ou haver uma pausa, para não entrar num ciclo de recarregar.
 - **Painel escondido não toca nada**: ao ir para a bandeja, o painel solta a prévia e as miniaturas (`OnVisibilityChanged`) e recria quando volta.

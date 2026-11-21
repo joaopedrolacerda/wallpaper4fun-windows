@@ -18,19 +18,17 @@ for arg in "$@"; do
   esac
 done
 
+NAME=wallpaper4fun-$RID
+EXTRA=()
 if $DIAGNOSTIC; then
   NAME=wallpaper4fun-diagnostico-$RID
-  MODE=(-p:Diagnostic=true -p:PublishSingleFile=false)
-else
-  NAME=wallpaper4fun-$RID
-  # Arquivos soltos, não .exe único: a v1.0.1 (arquivo único comprimido) não abria no Windows 10
-  # testado, e a versão de diagnóstico (arquivos soltos) abriu.
-  MODE=(-p:PublishSingleFile=false)
+  EXTRA=(-p:Diagnostic=true)
 fi
 
 OUT=publish/$NAME
 rm -rf $OUT publish/$NAME.zip
-dotnet publish src/Wallpaper4Fun.App -c Release -r $RID --self-contained true -p:DebugType=None $MODE -o $OUT
+# Configurações de publicação em src/Wallpaper4Fun.App/Properties/PublishProfiles/Release.pubxml
+dotnet publish src/Wallpaper4Fun.App -c Release -r $RID -p:PublishProfile=Release $EXTRA -o $OUT
 rm -f $OUT/*.pdb
 (cd publish && mv $NAME wallpaper4fun && zip -qr $NAME.zip wallpaper4fun && mv wallpaper4fun $NAME)
 echo "pronto: publish/$NAME.zip"

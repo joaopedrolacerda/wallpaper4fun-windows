@@ -22,7 +22,7 @@
 
         <CheckBox x:Name="EnabledBox" Content="Wallpaper ativo" Margin="0,16,0,0" Click="OnEnabledClick" />
         <CheckBox x:Name="PausedBox" Content="Pausar animação" Margin="0,6,0,0" Click="OnPausedClick" />
-        <CheckBox x:Name="TrayBox" Content="Ao fechar, ficar só na bandeja" Margin="0,6,0,0" Click="OnTrayClick" />
+        <CheckBox x:Name="TrayBox" Content="Ao fechar ou minimizar, ficar só na bandeja" Margin="0,6,0,0" Click="OnTrayClick" />
 
         <DockPanel Margin="0,12,0,0">
             <TextBlock Text="Velocidade" VerticalAlignment="Center" Margin="0,0,12,0" />

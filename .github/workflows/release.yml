@@ -1,0 +1,88 @@
+# Gera a Release do wallpaper4fun para Windows, numa máquina Windows do GitHub.
+# Dispara ao enviar uma tag v<versão> (ex.: v1.0.4), que precisa bater com a <Version> do app.
+# Também dá para rodar à mão (aba Actions > Release > Run workflow): gera os arquivos sem Release.
+#
+# Arquivos da Release:
+#   wallpaper4fun-<versão>-win-x64.zip  -> pasta com o .exe, para baixar e usar (SmartScreen avisa)
+#   wallpaper4fun-<versão>-store.msix   -> pacote para enviar à Microsoft Store (a loja assina)
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_NOLOGO: 1
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 11.0.x
+
+      - name: Versão
+        id: version
+        shell: pwsh
+        run: |
+          $csproj = Get-Content src/Wallpaper4Fun.App/Wallpaper4Fun.App.csproj -Raw
+          $version = [regex]::Match($csproj, '<Version>([^<]+)</Version>').Groups[1].Value
+          if ($env:GITHUB_REF_TYPE -eq 'tag' -and $env:GITHUB_REF_NAME -ne "v$version") {
+            throw "A tag $env:GITHUB_REF_NAME não bate com a <Version> $version do Wallpaper4Fun.App.csproj"
+          }
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Testes
+        run: dotnet test Wallpaper4Fun.sln -c Release
+
+      - name: Publicar a versão .exe
+        shell: pwsh
+        run: |
+          # Configurações em src/Wallpaper4Fun.App/Properties/PublishProfiles/Release.pubxml
+          dotnet publish src/Wallpaper4Fun.App -c Release -r win-x64 -p:PublishProfile=Release -o out/wallpaper4fun
+          Remove-Item out/wallpaper4fun/*.pdb -ErrorAction SilentlyContinue
+          Compress-Archive -Path out/wallpaper4fun -DestinationPath "wallpaper4fun-${{ steps.version.outputs.version }}-win-x64.zip"
+
+      - name: Empacotar para a Microsoft Store
+        shell: pwsh
+        run: |
+          $version = "${{ steps.version.outputs.version }}"
+          $identity = Get-Content packaging/msix/store-identity.json -Raw | ConvertFrom-Json
+          $manifest = Get-Content packaging/msix/AppxManifest.template.xml -Raw
+          $manifest = $manifest.Replace('{{IdentityName}}', $identity.IdentityName)
+          $manifest = $manifest.Replace('{{Publisher}}', $identity.Publisher)
+          $manifest = $manifest.Replace('{{PublisherDisplayName}}', $identity.PublisherDisplayName)
+          $manifest = $manifest.Replace('{{Version}}', "$version.0")
+          Copy-Item out/wallpaper4fun msix -Recurse
+          Copy-Item packaging/msix/Assets msix/Assets -Recurse
+          Set-Content msix/AppxManifest.xml $manifest -Encoding utf8
+          $makeappx = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin\*\x64\makeappx.exe" |
+            Sort-Object FullName -Descending | Select-Object -First 1
+          & $makeappx.FullName pack /d msix /p "wallpaper4fun-$version-store.msix" /o
+          if ($LASTEXITCODE -ne 0) { throw "makeappx falhou" }
+
+      - name: Guardar os arquivos
+        uses: actions/upload-artifact@v4
+        with:
+          name: wallpaper4fun-${{ steps.version.outputs.version }}
+          path: |
+            wallpaper4fun-*.zip
+            wallpaper4fun-*.msix
+
+      - name: Criar a Release
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          name: wallpaper4fun ${{ steps.version.outputs.version }} para Windows
+          body_path: packaging/release-notes.md
+          generate_release_notes: true
+          files: |
+            wallpaper4fun-*.zip
+            wallpaper4fun-*.msix

@@ -44,6 +44,16 @@ public partial class PanelWindow : Window
         ApplyClosePolicy();
     }
 
+    /// <summary>Minimizar com a opção ligada tira o painel da barra de tarefas (fica só na bandeja).</summary>
+    protected override void OnStateChanged(EventArgs e)
+    {
+        base.OnStateChanged(e);
+        if (WindowState != WindowState.Minimized) return;
+        if (ClosePolicy.DecideMinimize(_manager.Settings.HideToTrayWhenClosed) != PanelMinimizeAction.HideToTray) return;
+        Hide();
+        WindowState = WindowState.Normal; // para reabrir normal pela bandeja
+    }
+
     private void ApplyClosePolicy()
     {
         if (ClosePolicy.Decide(_manager.Settings.HideToTrayWhenClosed) == PanelCloseAction.HideToTray) Hide();

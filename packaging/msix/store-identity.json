@@ -1,0 +1,6 @@
+{
+  "_leia": "Copie estes 3 valores do Partner Center: Gerenciamento do produto > Identidade do produto. Enquanto não forem trocados, o .msix é gerado mas a loja recusa o envio.",
+  "IdentityName": "SUBSTITUA.wallpaper4fun",
+  "Publisher": "CN=SUBSTITUA-PELO-PUBLISHER-DO-PARTNER-CENTER",
+  "PublisherDisplayName": "SUBSTITUA PELO NOME DE EDITOR"
+}

@@ -1,5 +1,6 @@
 #!/bin/zsh
-# Gera os ícones do wallpaper4fun a partir de design/icon/*.svg.
+# Gera os ícones do wallpaper4fun a partir de design/icon/*.svg: o .ico do Windows,
+# os logos do pacote da Microsoft Store e, opcionalmente, o AppIcon do Mac.
 #   ./tools/IconKit/generate.sh                      -> só o .ico do Windows
 #   ./tools/IconKit/generate.sh <pasta do repo Mac>  -> também o AppIcon do Mac
 set -e
@@ -12,6 +13,12 @@ kit() { dotnet $TMP/iconkit/IconKit.dll "$@"; }
 for px in 16 24 32; do kit png design/icon/icon-small.svg $TMP/$px.png $px; done
 for px in 48 64 128 256; do kit png design/icon/icon-full.svg $TMP/$px.png $px; done
 kit ico src/Wallpaper4Fun.App/Assets/wallpaper4fun.ico $TMP/{16,24,32,48,64,128,256}.png
+
+# Microsoft Store (MSIX): logos do pacote. Até 50 px usam a versão simplificada.
+M=packaging/msix/Assets
+kit png design/icon/icon-small.svg $M/Square44x44Logo.png 44
+kit png design/icon/icon-small.svg $M/StoreLogo.png 50
+kit png design/icon/icon-full.svg $M/Square150x150Logo.png 150
 
 # Mac: margem transparente do grid da Apple (824 de 1024 px).
 if [[ -n "$1" ]]; then

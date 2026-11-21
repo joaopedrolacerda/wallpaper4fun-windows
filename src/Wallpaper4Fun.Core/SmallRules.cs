@@ -25,11 +25,19 @@ public sealed class ShaderClock
 
 public enum PanelCloseAction { HideToTray, Quit }
 
-/// <summary>Decide o que acontece quando o usuário fecha o painel.</summary>
+public enum PanelMinimizeAction { HideToTray, StayInTaskbar }
+
+/// <summary>
+/// Decide o que acontece quando o usuário fecha ou minimiza o painel. Uma opção só
+/// ("ficar só na bandeja") vale para os dois.
+/// </summary>
 public static class ClosePolicy
 {
     public static PanelCloseAction Decide(bool hideToTrayWhenClosed) =>
         hideToTrayWhenClosed ? PanelCloseAction.HideToTray : PanelCloseAction.Quit;
+
+    public static PanelMinimizeAction DecideMinimize(bool hideToTrayWhenClosed) =>
+        hideToTrayWhenClosed ? PanelMinimizeAction.HideToTray : PanelMinimizeAction.StayInTaskbar;
 }
 
 public readonly record struct PixelRect(int X, int Y, int Width, int Height);
