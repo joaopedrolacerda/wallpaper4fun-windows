@@ -40,12 +40,13 @@ O `.github/workflows/release.yml` monta a Release sozinho, numa máquina Windows
 2. Faça o commit, crie a tag `v1.0.5` e envie (`git push origin main --follow-tags`).
 3. O workflow confere se a tag bate com a `<Version>`, roda os testes no Windows, publica e cria a Release com:
    - `wallpaper4fun-<versão>-win-x64.zip`: a pasta com o `.exe`, para baixar e usar.
+   - `wallpaper4fun-<versão>-win-x64.msi`: instalador feito com WiX 6 a partir de `packaging/msi/wallpaper4fun.wxs` (Arquivos de Programas, todos os usuários, atalho no menu Iniciar, instala em silêncio com `/qn`). O `UpgradeCode` nunca muda.
    - `wallpaper4fun-<versão>-store.msix`: o pacote para a Microsoft Store, feito com o `makeappx` do Windows SDK.
 
 O texto da Release vem de `packaging/release-notes.md` mais a lista de commits. Também dá para rodar à mão (aba Actions → Release → Run workflow): gera os arquivos como artefatos, sem criar Release.
 
 - A v1.0.0 também ficou em `releases/` com **Git LFS** (primeira tentativa). Não adicione versões novas ali: gasta a cota grátis de LFS.
-- Histórico: **v1.0.0** e **v1.0.1** não abriam no Windows 10 testado (sumiam sem mensagem). A v1.0.1 adicionou `crash.log`, painel primeiro e `.ico` com BMP. A **v1.0.2** troca o `.exe` único por arquivos soltos (o que fez abrir), pausa com app em tela cheia e recupera o vídeo que congela. A **v1.0.4** faz minimizar também ir para a bandeja. A **v1.0.3** corrige "o vídeo trava muito e recarrega": vídeos convertidos para H.264 1080p 30 fps (o Appa era 4K 60 fps e o Fractal era HEVC), vigia que desiste depois de 2 recargas e painel escondido sem prévia tocando.
+- Histórico: **v1.0.0** e **v1.0.1** não abriam no Windows 10 testado (sumiam sem mensagem). A v1.0.1 adicionou `crash.log`, painel primeiro e `.ico` com BMP. A **v1.0.2** troca o `.exe` único por arquivos soltos (o que fez abrir), pausa com app em tela cheia e recupera o vídeo que congela. A **v1.0.4** faz minimizar também ir para a bandeja. A **v1.0.5** adiciona o instalador `.msi`. A **v1.0.3** corrige "o vídeo trava muito e recarrega": vídeos convertidos para H.264 1080p 30 fps (o Appa era 4K 60 fps e o Fractal era HEVC), vigia que desiste depois de 2 recargas e painel escondido sem prévia tocando.
 
 ### Microsoft Store
 
@@ -54,6 +55,7 @@ O texto da Release vem de `packaging/release-notes.md` mais a lista de commits. 
 - O `.msix` não é assinado: não instala com dois cliques; a loja assina ao publicar.
 - A versão do pacote é `<Version>.0` (a loja exige o último número zero).
 - Passos do usuário: criar a conta de desenvolvedor individual no Partner Center (gratuita, com verificação de identidade), reservar o nome "wallpaper4fun", copiar a identidade para o `store-identity.json`, gerar uma nova versão e enviar o `.msix` numa submissão (com descrição, capturas de tela e classificação etária).
+- **Alternativa escolhida pelo usuário: enviar como app "MSI/EXE"**, com o link do `.msi` da Release (`https://github.com/joaopedrolacerda/wallpaper4fun-windows/releases/download/v<versão>/wallpaper4fun-<versão>-win-x64.msi`; cada versão tem um link fixo). O `.msi` instala em silêncio sem parâmetros extras. **A loja exige que o `.msi` e os `.exe` dentro dele sejam assinados com um certificado de assinatura de código pago**; sem isso a certificação recusa. Quando houver certificado, assine no workflow (o `.exe` antes do `wix build`, o `.msi` depois).
 - Risco na análise da loja: o vídeo "Appa na lua" usa um personagem com direitos autorais.
 
 ## Estrutura

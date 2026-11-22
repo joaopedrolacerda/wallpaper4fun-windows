@@ -1,0 +1,31 @@
+<!--
+  Instalador .msi do wallpaper4fun (WiX 6). Gerado pelo workflow de Release:
+    wix build packaging/msi/wallpaper4fun.wxs -arch x64 -d Version=<versão> -d AppDir=<pasta do publish> -o <saída.msi>
+  Instala em "Arquivos de Programas\wallpaper4fun" para todos os usuários, com atalho no menu Iniciar.
+  Funciona em modo silencioso (msiexec /i wallpaper4fun.msi /qn), que é o que a Microsoft Store usa.
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <!-- O UpgradeCode nunca muda: é ele que faz uma versão nova substituir a antiga. -->
+  <Package Name="wallpaper4fun" Manufacturer="wallpaper4fun" Version="$(Version)"
+           UpgradeCode="D923D60F-1AE2-4258-977D-E479C3E7752B" Scope="perMachine">
+    <MajorUpgrade DowngradeErrorMessage="Uma versão mais nova do wallpaper4fun já está instalada." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <Icon Id="AppIcon" SourceFile="src/Wallpaper4Fun.App/Assets/wallpaper4fun.ico" />
+    <Property Id="ARPPRODUCTICON" Value="AppIcon" />
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="wallpaper4fun">
+        <Component>
+          <File Source="$(AppDir)\wallpaper4fun.exe">
+            <Shortcut Directory="ProgramMenuFolder" Name="wallpaper4fun" Description="Wallpaper animado no desktop"
+                      WorkingDirectory="INSTALLFOLDER" Icon="AppIcon" />
+          </File>
+        </Component>
+        <Files Include="$(AppDir)\**">
+          <Exclude Files="$(AppDir)\wallpaper4fun.exe" />
+        </Files>
+      </Directory>
+    </StandardDirectory>
+  </Package>
+</Wix>

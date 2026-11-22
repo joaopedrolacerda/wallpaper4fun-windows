@@ -4,6 +4,8 @@
 #
 # Arquivos da Release:
 #   wallpaper4fun-<versão>-win-x64.zip  -> pasta com o .exe, para baixar e usar (SmartScreen avisa)
+#   wallpaper4fun-<versão>-win-x64.msi  -> instalador (Arquivos de Programas + menu Iniciar); o link
+#                                          dele vai na Microsoft Store como app "MSI/EXE"
 #   wallpaper4fun-<versão>-store.msix   -> pacote para enviar à Microsoft Store (a loja assina)
 name: Release
 
@@ -50,6 +52,14 @@ jobs:
           Remove-Item out/wallpaper4fun/*.pdb -ErrorAction SilentlyContinue
           Compress-Archive -Path out/wallpaper4fun -DestinationPath "wallpaper4fun-${{ steps.version.outputs.version }}-win-x64.zip"
 
+      - name: Instalador .msi
+        shell: pwsh
+        run: |
+          dotnet tool install --global wix --version 6.0.2
+          $version = "${{ steps.version.outputs.version }}"
+          wix build packaging/msi/wallpaper4fun.wxs -arch x64 -d Version=$version -d "AppDir=$PWD\out\wallpaper4fun" -o "wallpaper4fun-$version-win-x64.msi"
+          if ($LASTEXITCODE -ne 0) { throw "wix build falhou" }
+
       - name: Empacotar para a Microsoft Store
         shell: pwsh
         run: |
@@ -74,6 +84,7 @@ jobs:
           name: wallpaper4fun-${{ steps.version.outputs.version }}
           path: |
             wallpaper4fun-*.zip
+            wallpaper4fun-*.msi
             wallpaper4fun-*.msix
 
       - name: Criar a Release
@@ -85,4 +96,5 @@ jobs:
           generate_release_notes: true
           files: |
             wallpaper4fun-*.zip
+            wallpaper4fun-*.msi
             wallpaper4fun-*.msix
