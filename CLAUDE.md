@@ -123,6 +123,7 @@ Café numa mesa com paisagem noturna (lua, montanhas e uma aurora suave), igual 
 - O `.ico` usa BMP de 32 bits do 16 ao 128 px e PNG só no 256, que é o formato que o Windows e o `System.Drawing.Icon` esperam.
 - `src/Wallpaper4Fun.App/Assets/wallpaper4fun.ico` é gerado: é usado no `.exe` (`ApplicationIcon`), na janela do painel e na bandeja (`AppIcon.Load`).
 - Para gerar de novo depois de mudar os SVGs: `./tools/IconKit/generate.sh`. Passe a pasta do repo Mac (`../Untitled\ Project\ 2`) para gerar também o AppIcon de lá. O `IconKit` usa Svg.Skia e não faz parte da solução.
+- Artes da página da Microsoft Store: `design/store/box-art-1080x1080.svg` (1:1) e `design/store/poster-art-720x1080.svg` (2:3), com a mesma cena do ícone sem o canto arredondado, mais céu e o nome do app. Os PNGs ao lado saem do `generate.sh` e são enviados à mão no Partner Center (não vão no pacote). Se mudar a cena do ícone, mude também nessas duas artes.
 
 ## Vídeos padrão
 

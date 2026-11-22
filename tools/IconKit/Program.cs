@@ -1,23 +1,31 @@
 using SkiaSharp;
 using Svg.Skia;
 
-// IconKit: png <svg> <out.png> <size> [inset]   |   ico <out.ico> <png>...
+// IconKit: png <svg> <out.png> <size | LxA> [inset]   |   ico <out.ico> <png>...
 switch (args[0])
 {
-    case "png": RenderPng(args[1], args[2], int.Parse(args[3]), args.Length > 4 ? float.Parse(args[4], System.Globalization.CultureInfo.InvariantCulture) : 0f); break;
+    case "png": RenderPng(args[1], args[2], ParseSize(args[3]), args.Length > 4 ? float.Parse(args[4], System.Globalization.CultureInfo.InvariantCulture) : 0f); break;
     case "ico": WriteIco(args[1], args[2..]); break;
 }
 
-static void RenderPng(string svgPath, string outPath, int size, float inset)
+// "256" vira 256x256; "720x1080" vira 720 de largura por 1080 de altura (artes da loja).
+static (int Width, int Height) ParseSize(string text)
+{
+    var parts = text.Split('x').Select(int.Parse).ToArray();
+    return (parts[0], parts.Length > 1 ? parts[1] : parts[0]);
+}
+
+static void RenderPng(string svgPath, string outPath, (int Width, int Height) size, float inset)
 {
     using var svg = new SKSvg();
     var picture = svg.Load(svgPath) ?? throw new Exception("SVG inválido");
-    var art = size * (1 - 2 * inset);
-    using var bitmap = new SKBitmap(new SKImageInfo(size, size, SKColorType.Rgba8888, SKAlphaType.Premul));
+    var (width, height) = size;
+    using var bitmap = new SKBitmap(new SKImageInfo(width, height, SKColorType.Rgba8888, SKAlphaType.Premul));
     using var canvas = new SKCanvas(bitmap);
     canvas.Clear(SKColors.Transparent);
-    canvas.Translate(size * inset, size * inset);
-    canvas.Scale(art / picture.CullRect.Width, art / picture.CullRect.Height);
+    canvas.Translate(width * inset, height * inset);
+    canvas.Scale(width * (1 - 2 * inset) / picture.CullRect.Width, height * (1 - 2 * inset) / picture.CullRect.Height);
+    canvas.Translate(-picture.CullRect.Left, -picture.CullRect.Top);
     canvas.DrawPicture(picture, new SKPaint { IsAntialias = true });
     using var data = bitmap.Encode(SKEncodedImageFormat.Png, 100);
     File.WriteAllBytes(outPath, data.ToArray());

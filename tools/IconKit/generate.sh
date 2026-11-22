@@ -1,6 +1,6 @@
 #!/bin/zsh
 # Gera os ícones do wallpaper4fun a partir de design/icon/*.svg: o .ico do Windows,
-# os logos do pacote da Microsoft Store e, opcionalmente, o AppIcon do Mac.
+# os logos do pacote e as artes da página da Microsoft Store e, opcionalmente, o AppIcon do Mac.
 #   ./tools/IconKit/generate.sh                      -> só o .ico do Windows
 #   ./tools/IconKit/generate.sh <pasta do repo Mac>  -> também o AppIcon do Mac
 set -e
@@ -19,6 +19,10 @@ M=packaging/msix/Assets
 kit png design/icon/icon-small.svg $M/Square44x44Logo.png 44
 kit png design/icon/icon-small.svg $M/StoreLogo.png 50
 kit png design/icon/icon-full.svg $M/Square150x150Logo.png 150
+
+# Artes da página da loja (enviadas pelo Partner Center, não vão no pacote).
+kit png design/store/box-art-1080x1080.svg design/store/box-art-1080x1080.png 1080x1080
+kit png design/store/poster-art-720x1080.svg design/store/poster-art-720x1080.png 720x1080
 
 # Mac: margem transparente do grid da Apple (824 de 1024 px).
 if [[ -n "$1" ]]; then
